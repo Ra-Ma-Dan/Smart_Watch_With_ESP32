@@ -1,0 +1,31 @@
+name: ESP-IDF Firmware CI Build
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-firmware:
+    runs-on: ubuntu-latest
+
+    # Use the official pre-built Espressif Docker container directly in the cloud
+    container:
+      image: espressif/idf:release-v5.3
+
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Set Hardware Target to ESP32-S3
+        run: |
+          . /opt/esp/idf/export.sh
+          cd firmware
+          idf.py set-target esp32s3
+
+      - name: Compile Smart Watch Application
+        run: |
+          . /opt/esp/idf/export.sh
+          cd firmware
+          idf.py build

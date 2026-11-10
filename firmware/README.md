@@ -1,10 +1,12 @@
-# ⌚ Smart Watch In C (ESP-IDF Ecosystem)
+# ESP-IDF Smart Watch Firmware Application : ⌚ Smart Watch In C (ESPressif-IoT Development Framework Ecosystem) 
 
-A feature-rich, high-performance smartwatch firmware built entirely in C using the official **Espressif IoT Development Framework (ESP-IDF)**. This repository houses low-level hardware abstraction layers (HAL), peripheral drivers, power management state machines, and graphical porting files tailored for a wearable environment.
+A feature-rich, high-performance smartwatch firmware built entirely in C using the official **Espressif IoT Development Framework (ESP-IDF)**. This repository houses low-level hardware abstraction layers (HAL), peripheral drivers, power management state machines, and graphical porting files tailored for a wearable environment. This subdirectory contains the primary C codebase built for the Espressif **ESP-IDF v6.x** framework. The firmware follows a highly decoupled component design, assigning isolated drivers to separate system modules to ensure long-term stability, thread safety, and straightforward testing.
 
 ---
 
-## 🛠️ Architecture & Core Components
+---
+
+## 🛠️🏗️ Architectural Principles & Core Components
 
 The project's modular firmware design isolates custom interface drivers from peripheral chips, ensuring optimal reusability and clean RTOS task management.
 
@@ -31,71 +33,70 @@ The project's modular firmware design isolates custom interface drivers from per
 * **`ota_manager`:** Secure over-the-air firmware updates via Wi-Fi/BLE routines.
 * **`lvgl_driver`:** Custom display port framework utilizing **LVGL (Light and Versatile Graphics Library)** for the circular `gc9a01` panel and `CST8165` capacitive touch interface.
 
+### 🚌 Multi-Device Shared I2C Bus Management
+To eliminate bus collision risks across the extensive array of peripheral sensors, the custom `my_i2c` component wraps standard I2C reads and writes inside FreeRTOS Mutex semaphores. This ensures safe multi-tasking access across the `AXP2101`, `BMI270`, `CST8165`, and other devices sharing the exact same physical trace pins.
+
+### 🧠 FreeRTOS Task Architecture
+The firmware divides operations across two processing cores to protect high-frequency sensory tasks from display rendering overhead:
+1. **Core 0 (Sensory & Bus Loop):** Asynchronously services I2C sensor frames, registers interrupt handlers, and processes Bluetooth events.
+2. **Core 1 (Graphics Pipeline):** Executes the LVGL visual runtime processing loop and updates the frame buffers.
+
 ---
 
-## 📂 Project Structure
+---
 
-```text
-Smart_Watch_In_C_ESP-IDF/
-├── .devcontainer/           # Isolated development environment settings
-├── .vscode/                 # Pre-configured C/C++ workspace properties and launch profiles
-├── components/              # System-level drivers and communication interfaces
-│   ├── ble_driver/          # BLE stack and service setup
-│   ├── ota_manager/         # Seamless network update routines
-│   ├── sleep_manager/       # Wearable energy-conservation states
-│   ├── gc9a01/              # Circular TFT display initialization
-│   ├── my_gpio / my_i2c / my_spi / my_uart  # Specialized low-level hardware abstraction
-│   └── sleep_manager/       # Active-to-standby power profiling
-├── lvgl_driver/             # Graphics engine orchestration layer
-│   └── lvgl_port/           # Touch panel mapping and memory buffer configuration
-├── main/                    # Application entryway, hardware setup, and task loops
-│   ├── CMakeLists.txt
-│   ├── Kconfig.projbuild    # Project configuration menu definitions
-│   └── main.c               # System initialization sequence
-└── peripherals/             # Dedicated chip drivers for the onboard sensor suite
-    ├── AXP2101/             # Multi-rail Power Management
-    ├── BMI270/              # Pedometer & Motion IMU
-    ├── CST8165/             # Multi-touch capacitive screen mapping
-    ├── DRV2605L/            # Advanced ERM/LRA haptic feedback
-    ├── MAX17048/            # Battery fuel gauge monitoring
-    ├── MAX30102/            # Photoplethysmogram (PPG) sensor
-    ├── PFC85063A/           # Accurate I2C standalone RTC
-    └── TMP117 / VEML7700    # Environmental temperature & luminosity tracking
+## 🚀 Environment Setup & Compilation
+
+### 🐋 Method A: Docker DevContainer (Highly Recommended)
+An isolated compilation pipeline is configured under `.devcontainer/`. This completely bypasses local host toolchain installation debugging.
+1. Open the `/firmware` directory inside **VS Code**.
+2. Click the prompt **"Reopen in Container"** when requested.
+3. Once the environment completes initialization, open the built-in terminal. It is pre-configured with active ESP-IDF paths.
+
+### 💻 Method B: Manual Native Setup
+1. Ensure you have the stable release of **ESP-IDF v5.1+** installed natively.
+2. Open your terminal shell initialized with variables matching the target profile:
+   ```bash
+   . \$HOME/export.sh # Linux/macOS path wrapper
+   ```
+3. Change into the application root directory:
+   ```bash
+   cd Smart_Watch_with_esp_idf/firmware
+   ```
+
+---
+
+## 🛠️ Step-by-Step Compilation Commands
+
+### 1. Define the Hardware Target
+Configure the project explicitly to map against the ESP32-S3 SOC core:
+```bash
+idf.py set-target esp32s3
 ```
 
----
+### 2. Adjust System Configurations (Menuconfig)
+Open the interactive terminal overlay menu to toggle specific device drivers, adjust CPU clocking speeds, or reconfigure custom smart watch parameters:
+```bash
+idf.py menuconfig
+```
 
-## 💻 Technical Highlights
+### 3. Build the Binaries
+Compile the main binary partition layouts, bootloaders, and external file distributions:
+```bash
+idf.py build
+```
 
-* **Native ESP-IDF v5.x Compilation:** Avoids bloated wrappers to leverage true FreeRTOS task prioritization, queue passing, and Event Groups.
-* **Deep Sleep Profiling:** Leverages the `sleep_manager` alongside the external `PFC85063A` RTC and `BMI270` motion tracking to put the ESP32 chip into an ultra-low-current state until shaken or scheduled to wake up.
-* **Optimized Display Pipeline:** Directly interacts with the `gc9a01` circular screen over a tuned, high-speed SPI bus via DMA (Direct Memory Access) allocations inside the LVGL porting layer.
-
----
-
-## 🚀 Setting Up the Repository
-
-### Prerequisites
-* Espressif **ESP-IDF v6.1.x** environment fully configured (via command line or the VS Code Extension).
-* Target Microcontroller: ESP32 variants matching your custom PCB.
-
-### Building and Flashing
-1. Clone the repository and update necessary submodules (such as `lvgl` inside components):
-   ```bash
-   git clone --recursive https://github.com
-   cd Smart_Watch_In_C_ESP-IDF
-   ```
-2. Configure project parameters (such as display pins, BLE parameters, or battery targets) using the structural configuration terminal:
-   ```bash
-   idf.py menuconfig
-   ```
-3. Compile, flash to your device, and spin up the debugging monitor:
-   ```bash
-   idf.py build
-   idf.py -p [YOUR_COM_PORT] flash monitor
-   ```
+### 4. Flash and Monitor Real-Time Debug Logs
+Connect your smart watch hardware module through its built-in UART/USB line, update the template serial parameter match below, and run:
+```bash
+idf.py -p [YOUR_SERIAL_PORT] flash monitor
+```
+*(To exit the live console tracking display terminal later, press `Ctrl + ]`)*.
 
 ---
+
+## 🔄 OTA (Over-The-Air) Deployments
+The internal `ota_manager` handles wireless platform updates over a secure Wi-Fi connection. It utilizes dual flash partition banks (`ota_0` and `ota_1`) along with an anti-rollback enforcement system to ensure safe recovery if a new build encounters runtime validation failures.
 
 ## 📄 License
 This architecture framework is made open-source and free to distribute under the terms of the **MIT License**.

@@ -1,8 +1,8 @@
 #ifndef AXP2101_H
 #define AXP2101_H
 
-#include "i2c_driver.h"
-#include "uart_driver.h"
+#include "my_uart.h"
+#include "my_i2c.h"
 #include "esp_err.h"
 #include <stdint.h>
 #include <stdbool.h>

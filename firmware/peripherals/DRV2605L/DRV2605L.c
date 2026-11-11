@@ -1,4 +1,4 @@
-#include "drv2605l.h"
+#include "DRV2605L.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 

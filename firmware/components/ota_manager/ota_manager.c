@@ -3,7 +3,7 @@
 #include "lvgl_port.h"
 #include "ui_watchface.h"
 #include "sleep_manager.h"
-#include "drv2605l.h"
+#include "DRV2605L.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_https_ota.h"

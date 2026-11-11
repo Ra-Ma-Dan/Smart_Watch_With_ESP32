@@ -1,4 +1,4 @@
-#include "max17048.h"
+#include "MAX17048.h"
 
 // ── Read a 16 bit big endian register ─────────────────────────
 // MAX17048 sends high byte first then low byte

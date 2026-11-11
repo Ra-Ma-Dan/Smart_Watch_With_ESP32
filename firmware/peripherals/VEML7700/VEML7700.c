@@ -1,4 +1,4 @@
-#include "veml7700.h"
+#include "VEML7700.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <math.h>

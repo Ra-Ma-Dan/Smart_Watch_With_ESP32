@@ -1,4 +1,4 @@
-#include "bmi270.h"
+#include "BMI270.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <string.h>

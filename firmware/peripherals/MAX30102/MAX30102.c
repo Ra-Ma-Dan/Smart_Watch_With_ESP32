@@ -1,4 +1,4 @@
-#include "max30102.h"
+#include "MAX30102.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <math.h>

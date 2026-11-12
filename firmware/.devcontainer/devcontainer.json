@@ -14,10 +14,5 @@
 			]
 		}
 	},
-	"runArgs": ["--privileged"],
-	"remoteUser": "root",
-	"mounts": [
-		"source=/dev,target=/dev,type=bind"
-	]
-
+	"runArgs": ["--privileged"]
 }

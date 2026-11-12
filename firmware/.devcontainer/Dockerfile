@@ -1,4 +1,4 @@
-ARG DOCKER_TAG=release-v6.1
+ARG DOCKER_TAG=latest
 FROM espressif/idf:${DOCKER_TAG}
 
 ENV LC_ALL=C.UTF-8
